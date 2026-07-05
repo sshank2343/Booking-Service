@@ -27,12 +27,14 @@ export async function createIdempotencyKey(key:string, bookingId?:number){
 
 export async function getIdempotencyKeyWithLock(tx:Prisma.TransactionClient,key:string){
 
-    if(isValidUUID(key)){
+    if(!isValidUUID(key)){
         throw new BadRequestError("Invalid idempotency key format")
     }
     const idempotencyKey:Array<IdempotencyKey> = await tx.$queryRaw`
-    SELECT * FROM "IdempotencyKey" WHERE key = ${key} FOR UPDATE
-    `
+        SELECT * FROM IdempotencyKey
+        WHERE idemkey = ${key}
+        FOR UPDATE;
+        `;
     if(!idempotencyKey || idempotencyKey.length === 0){
         throw new NotFoundError("Idempotency key not found")
     }
